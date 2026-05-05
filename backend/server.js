@@ -16,6 +16,15 @@ if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
+// CORS — allow iOS file:// origin and web dev
+app.use((_req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  if (_req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 // Serve static files (the app itself)
 app.use(express.static(STATIC_DIR));
 
