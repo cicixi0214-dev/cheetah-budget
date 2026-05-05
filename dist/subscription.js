@@ -158,7 +158,7 @@ window.CentsnapSubscription = (function () {
     if (!isPremium()) { alert('请升级 Premium 以使用云同步。'); return; }
     var data = localStorage.getItem('sbh3_data');
     if (!data) return;
-    fetch('/mvp-api/data/sync', {
+    fetch('https://cheetah-budget.onrender.com/mvp-api/data/sync', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -182,7 +182,7 @@ window.CentsnapSubscription = (function () {
 
   function syncFromCloud() {
     if (!isPremium()) { alert('请升级 Premium 以使用云同步。'); return; }
-    return fetch('/mvp-api/data/load', {
+    return fetch('https://cheetah-budget.onrender.com/mvp-api/data/load', {
       headers: {
         'Authorization': 'Bearer ' + (localStorage.getItem('sbh3_token') || '')
       }
