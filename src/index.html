@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cheetah Budget - App MVP</title>
+    <style>
+      :root {
+        --yellow: #f2d451;
+        --yellow-deep: #e8c738;
+        --bg: #f4f5f7;
+        --ink: #151515;
+        --muted: #6b7280;
+        --line: #d9dde3;
+        --card: #ffffff;
+        --accent: #111827;
+        --ok: #0f766e;
+        --danger: #be123c;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Avenir Next", "SF Pro Display", "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      .app {
+        max-width: 430px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background: #fff;
+        position: relative;
+        box-shadow: 0 0 0 1px #e9edf3;
+      }
+      .top {
+        background: var(--yellow);
+        padding: 14px 14px 10px;
+        border-bottom: 1px solid #ecd673;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: -0.01em;
+      }
+      .small { font-size: 12px; color: #4b5563; }
+      .auth {
+        margin-top: 10px;
+        background: rgba(255,255,255,0.72);
+        border: 1px solid rgba(0,0,0,0.08);
+        border-radius: 12px;
+        padding: 10px;
+      }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+      input, button, select {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        padding: 10px;
+        font-size: 14px;
+      }
+      button {
+        border: 0;
+        font-weight: 700;
+        cursor: pointer;
+        color: #fff;
+        background: #1f2937;
+      }
+      button.ghost { background: #eef2ff; color: #1e3a8a; border: 1px solid #c7d2fe; }
+      button.warn { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+      .status {
+        margin-top: 8px;
+        border: 1px solid #d1d5db;
+        background: #f9fafb;
+        border-radius: 8px;
+        font-size: 12px;
+        padding: 7px 8px;
+      }
+      .status.ok { border-color: #86efac; background: #ecfdf5; color: #065f46; }
+      .status.err { border-color: #fdba74; background: #fff7ed; color: #9a3412; }
+
+      .shell { display: none; padding-bottom: 74px; }
+      .tab { display: none; padding: 12px; }
+      .tab.active { display: block; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .kpi .k { font-size: 12px; color: var(--muted); }
+      .kpi .v { font-size: 23px; font-weight: 800; margin-top: 2px; }
+
+      .type-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .type-toggle button.active { background: #1f2937; color: #fff; }
+      .type-toggle button:not(.active) { background: #eef1f5; color: #475569; border: 1px solid #d8dee6; }
+
+      .cat-grid {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .cat {
+        border: 1px solid #d7dde6;
+        border-radius: 12px;
+        padding: 8px 6px;
+        text-align: center;
+        background: #f2f4f7;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .cat .ico {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        margin: 0 auto 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+      }
+      .cat.active { background: #fff4bf; border-color: #eab308; }
+      .cat.active .ico { background: #fde68a; border-color: #facc15; }
+
+      .amt-box {
+        margin-top: 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 10px;
+        font-size: 30px;
+        font-weight: 800;
+        text-align: right;
+        letter-spacing: 1px;
+      }
+      .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+      .keypad {
+        margin-top: 8px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .key {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff;
+        padding: 12px 0;
+        text-align: center;
+        font-size: 20px;
+        cursor: pointer;
+      }
+      .key.ok { background: var(--yellow); font-weight: 800; }
+      .key.alt { background: #f3f4f6; color: #374151; font-size: 15px; }
+
+      .tx { border-bottom: 1px solid #f1f5f9; padding: 10px 0; display: flex; justify-content: space-between; gap: 10px; }
+      .tx:last-child { border-bottom: 0; }
+      .tx .left { min-width: 0; }
+      .tx .name { font-weight: 700; font-size: 14px; }
+      .tx .meta { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .tx .amt { font-weight: 800; }
+      .tx .amt.expense { color: #b91c1c; }
+      .tx .amt.income { color: #047857; }
+
+      .bar {
+        height: 10px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        overflow: hidden;
+      }
+      .bar > i { display: block; height: 100%; background: #facc15; }
+
+      .asset-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eef2f7; }
+      .asset-row:last-child { border-bottom: 0; }
+
+      .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+      .badge {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 8px 6px;
+        text-align: center;
+        font-size: 11px;
+        background: #fff;
+      }
+      .badge .ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        margin: 0 auto 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f4f6;
+        color: #6b7280;
+        font-size: 16px;
+      }
+      .badge .day { font-weight: 800; font-size: 14px; }
+      .badge .cap { color: #6b7280; font-size: 10px; margin-top: 1px; }
+      .badge.on {
+        background: #fff7cc;
+        border-color: #facc15;
+      }
+      .badge.on .ico {
+        background: #facc15;
+        color: #111827;
+      }
+      .badge-title { font-weight: 800; margin-bottom: 6px; }
+
+      .nav {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        background: #fff;
+        border-top: 1px solid #e5e7eb;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        padding: 6px 4px 8px;
+      }
+      .nav button {
+        background: transparent;
+        color: #6b7280;
+        border: 0;
+        border-radius: 10px;
+        padding: 8px 2px;
+        font-size: 11px;
+      }
+      .nav button .i { display: block; font-size: 19px; margin-bottom: 3px; }
+      .nav button.active { color: #111827; font-weight: 800; }
+      .nav button.mid {
+        transform: translateY(-12px);
+      }
+      .nav button.mid .i {
+        display: inline-flex;
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        align-items: center;
+        justify-content: center;
+        background: var(--yellow);
+        box-shadow: 0 6px 16px rgba(234, 179, 8, 0.35);
+      }
+
+      @media (max-width: 420px) {
+        .cat-grid { grid-template-columns: repeat(3, 1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <div class="brand">
+          <h1>Cheetah Budget</h1>
+          <span class="small">US Build</span>
+        </div>
+        <div class="small">3-second tracking with yellow-black + gray control system.</div>
+
+        <section class="auth">
+          <div class="row">
+            <input id="email" type="email" placeholder="you@email.com" />
+            <input id="code" maxlength="6" placeholder="6-digit code" />
+          </div>
+          <div class="row3">
+            <button id="requestCodeBtn" class="ghost" type="button">Get Code</button>
+            <button id="loginBtn" type="button">Register / Login</button>
+            <button id="logoutBtn" class="warn" type="button">Logout</button>
+          </div>
+          <div id="authStatus" class="status">Not logged in.</div>
+        </section>
+      </header>
+
+      <main id="shell" class="shell">
+        <section id="tab-ledger" class="tab active"></section>
+        <section id="tab-chart" class="tab"></section>
+        <section id="tab-add" class="tab"></section>
+        <section id="tab-discover" class="tab"></section>
+        <section id="tab-me" class="tab"></section>
+      </main>
+
+      <nav id="bottomNav" class="nav" style="display:none;">
+        <button data-tab="ledger" class="active"><span class="i">🧾</span>Ledger</button>
+        <button data-tab="chart"><span class="i">📈</span>Charts</button>
+        <button data-tab="add" class="mid"><span class="i">＋</span>Add</button>
+        <button data-tab="discover"><span class="i">🧭</span>Discover</button>
+        <button data-tab="me"><span class="i">👤</span>Me</button>
+      </nav>
+    </div>
+
+    <script>
+      const API_BASE = "/mvp-api";
+      const TOKEN_KEY = "sbh3_token";
+      const EMAIL_KEY = "sbh3_email";
+      const STORE_KEY = "sbh3_data";
+
+      const expenseCategoryPool = [
+        { key: "Food", icon: "🍽️" },
+        { key: "Shopping", icon: "🛍️" },
+        { key: "Daily", icon: "🧻" },
+        { key: "Transport", icon: "🚌" },
+        { key: "Groceries", icon: "🥕" },
+        { key: "Fruits", icon: "🍎" },
+        { key: "Snacks", icon: "🧁" },
+        { key: "Fitness", icon: "🚴" },
+        { key: "Fun", icon: "🎉" },
+        { key: "Phone", icon: "📞" },
+        { key: "Clothes", icon: "👕" },
+        { key: "Beauty", icon: "💄" },
+        { key: "Home", icon: "🏠" },
+        { key: "Kids", icon: "🧒" },
+        { key: "Pet", icon: "🐶" },
+        { key: "Other", icon: "🧩" }
+      ];
+      const incomeCategoryPool = [
+        { key: "Salary", icon: "💼" },
+        { key: "Bonus", icon: "🎁" },
+        { key: "Freelance", icon: "🧑‍💻" },
+        { key: "Business", icon: "🏢" },
+        { key: "Investment", icon: "📈" },
+        { key: "Gift", icon: "💝" },
+        { key: "Refund", icon: "↩️" },
+        { key: "Other", icon: "🧩" }
+      ];
+
+      const defaultData = {
+        monthlyBudget: 1200,
+        tx: [],
+        assets: [
+          { name: "Cash", amount: 250 },
+          { name: "Checking", amount: 1800 },
+          { name: "Savings", amount: 3500 },
+          { name: "Credit Card", amount: -320 }
+        ],
+        quickCat: "Food",
+        quickType: "expense",
+        inputValue: "",
+        checkins: []
+      };
+
+      let auth = { token: localStorage.getItem(TOKEN_KEY) || "", email: localStorage.getItem(EMAIL_KEY) || "" };
+      let data = loadData();
+      let activeTab = "ledger";
+
+      const api = {
+        requestCode: (email) => fetch(`${API_BASE}/auth/request-code`, {
+          method: "POST", headers: headers(), body: JSON.stringify({ email })
+        }).then(r => r.json()),
+        verifyCode: (email, code) => fetch(`${API_BASE}/auth/verify-code`, {
+          method: "POST", headers: headers(), body: JSON.stringify({ email, code })
+        }).then(r => r.json()),
+        me: () => fetch(`${API_BASE}/auth/me`, { headers: headers() }).then(r => r.json()),
+        logout: () => fetch(`${API_BASE}/auth/logout`, { method: "POST", headers: headers() }).then(r => r.json())
+      };
+
+      bindAuth();
+      bindNav();
+      checkAuth();
+
+      function headers() {
+        const h = { "Content-Type": "application/json" };
+        if (auth.token) h.Authorization = `Bearer ${auth.token}`;
+        return h;
+      }
+
+      function loadData() {
+        try {
+          const raw = localStorage.getItem(STORE_KEY);
+          if (!raw) return structuredClone(defaultData);
+          const p = JSON.parse(raw);
+          return {
+            monthlyBudget: Number(p.monthlyBudget || 0),
+            tx: Array.isArray(p.tx) ? p.tx : [],
+            assets: Array.isArray(p.assets) ? p.assets : structuredClone(defaultData.assets),
+            quickCat: p.quickCat || "Food",
+            quickType: p.quickType || "expense",
+            inputValue: p.inputValue || "",
+            checkins: Array.isArray(p.checkins) ? p.checkins : []
+          };
+        } catch {
+          return structuredClone(defaultData);
+        }
+      }
+
+      function saveData() {
+        localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      }
+
+      function setStatus(text, cls = "") {
+        const el = document.getElementById("authStatus");
+        el.textContent = text;
+        el.className = `status ${cls}`.trim();
+      }
+
+      function syncAuthUI() {
+        document.getElementById("email").value = auth.email || "";
+        document.getElementById("shell").style.display = auth.token ? "block" : "none";
+        document.getElementById("bottomNav").style.display = auth.token ? "grid" : "none";
+        if (!auth.token) setStatus("Not logged in. Register/Login to use app.", "err");
+      }
+
+      function bindAuth() {
+        document.getElementById("requestCodeBtn").onclick = async () => {
+          const email = document.getElementById("email").value.trim().toLowerCase();
+          if (!email) return alert("Please enter email.");
+          const r = await api.requestCode(email);
+          if (!r.ok) return setStatus(`Code request failed: ${r.error || "unknown"}`, "err");
+          setStatus(`Code: ${r.demoCode} (demo mode)`, "ok");
+        };
+
+        document.getElementById("loginBtn").onclick = async () => {
+          const email = document.getElementById("email").value.trim().toLowerCase();
+          const code = document.getElementById("code").value.trim();
+          if (!email || !code) return alert("Enter email and code.");
+          const r = await api.verifyCode(email, code);
+          if (!r.ok) return setStatus(`Login failed: ${r.error || "invalid"}`, "err");
+          auth.token = r.token;
+          auth.email = r.user.email;
+          localStorage.setItem(TOKEN_KEY, auth.token);
+          localStorage.setItem(EMAIL_KEY, auth.email);
+          document.getElementById("code").value = "";
+          syncAuthUI();
+          setStatus(`Logged in as ${auth.email}`, "ok");
+          renderAll();
+        };
+
+        document.getElementById("logoutBtn").onclick = async () => {
+          if (auth.token) await api.logout().catch(() => ({}));
+          auth = { token: "", email: "" };
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(EMAIL_KEY);
+          syncAuthUI();
+        };
+      }
+
+      async function checkAuth() {
+        if (!auth.token) return syncAuthUI();
+        const me = await api.me().catch(() => ({ ok: false }));
+        if (!me.ok) {
+          auth = { token: "", email: "" };
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(EMAIL_KEY);
+          return syncAuthUI();
+        }
+        auth.email = me.user.email;
+        localStorage.setItem(EMAIL_KEY, auth.email);
+        syncAuthUI();
+        setStatus(`Logged in as ${auth.email}`, "ok");
+        renderAll();
+      }
+
+      function bindNav() {
+        document.getElementById("bottomNav").addEventListener("click", (e) => {
+          const btn = e.target.closest("button[data-tab]");
+          if (!btn) return;
+          activeTab = btn.dataset.tab;
+          for (const b of document.querySelectorAll(".nav button")) b.classList.toggle("active", b === btn);
+          for (const t of document.querySelectorAll(".tab")) t.classList.remove("active");
+          document.getElementById(`tab-${activeTab}`).classList.add("active");
+          if (activeTab === "add") renderAddTab();
+        });
+      }
+
+      function renderAll() {
+        renderLedgerTab();
+        renderChartTab();
+        renderAddTab();
+        renderDiscoverTab();
+        renderMeTab();
+      }
+
+      function monthKey(d) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, "0")}`;
+      }
+
+      function calcMonthStats() {
+        const now = new Date();
+        const mk = monthKey(now);
+        let income = 0, expense = 0;
+        for (const t of data.tx) {
+          const d = new Date(t.date);
+          if (monthKey(d) !== mk) continue;
+          if (t.type === "income") income += t.amount;
+          else expense += t.amount;
+        }
+        return { income, expense, balance: income - expense };
+      }
+
+      function renderLedgerTab() {
+        const stats = calcMonthStats();
+        const tab = document.getElementById("tab-ledger");
+        const sorted = [...data.tx].sort((a,b) => new Date(b.date) - new Date(a.date));
+        tab.innerHTML = `
+          <div class="card">
+            <div class="kpi-grid">
+              <div class="kpi"><div class="k">This Month Income</div><div class="v">$${money(stats.income)}</div></div>
+              <div class="kpi"><div class="k">This Month Expense</div><div class="v">$${money(stats.expense)}</div></div>
+              <div class="kpi"><div class="k">Balance</div><div class="v">$${money(stats.balance)}</div></div>
+              <div class="kpi"><div class="k">Entries</div><div class="v">${sorted.length}</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:6px;">Ledger</div>
+            ${sorted.map(tx => `
+              <div class="tx" data-id="${tx.id}">
+                <div class="left">
+                  <div class="name">${iconFor(tx.category)} ${esc(tx.category)}</div>
+                  <div class="meta">${fmtDateTime(new Date(tx.date))}${tx.note ? ` · ${esc(tx.note)}` : ""}</div>
+                </div>
+                <div class="amt ${tx.type}">${tx.type === "expense" ? "-" : "+"}$${money(tx.amount)}</div>
+              </div>
+            `).join("") || '<div class="small">No entries yet.</div>'}
+          </div>
+        `;
+
+        tab.querySelectorAll(".tx").forEach(el => {
+          el.addEventListener("click", () => quickEdit(el.dataset.id));
+        });
+      }
+
+      function quickEdit(id) {
+        const t = data.tx.find(x => x.id === id);
+        if (!t) return;
+        const val = prompt("Edit amount", String(t.amount));
+        if (val === null) return;
+        const num = Number(val);
+        if (!num || num <= 0) return alert("Invalid amount");
+        t.amount = num;
+        saveData();
+        renderAll();
+      }
+
+      function renderChartTab() {
+        const tab = document.getElementById("tab-chart");
+        const stats = calcMonthStats();
+        const isPremium = window.CentsnapSubscription && window.CentsnapSubscription.isPremium();
+
+        if (!isPremium) {
+          tab.innerHTML = `
+            <div class="card">
+              <div style="font-weight:800;margin-bottom:8px;">Spending Trend</div>
+              <div class="small">You spent $${money(stats.expense)} this month.</div>
+            </div>
+            ${window.CentsnapSubscription ? window.CentsnapSubscription.showPaywall() : ''}
+          `;
+          return;
+        }
+
+        const map = new Map();
+        for (const t of data.tx) {
+          if (t.type !== "expense") continue;
+          map.set(t.category, (map.get(t.category) || 0) + t.amount);
+        }
+        const total = [...map.values()].reduce((a,b)=>a+b,0) || 1;
+        const top = [...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+        tab.innerHTML = `
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:8px;">Spending Trend</div>
+            <div class="small">You spent $${money(stats.expense)} this month.</div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:8px;">Top Categories</div>
+            ${top.map(([k,v]) => `
+              <div style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>${iconFor(k)} ${esc(k)}</span><span>${((v/total)*100).toFixed(1)}%</span></div>
+                <div class="bar"><i style="width:${Math.max(3,(v/total)*100)}%"></i></div>
+              </div>
+            `).join("") || '<div class="small">Add expenses to see chart.</div>'}
+          </div>
+        `;
+      }
+
+      function renderAddTab() {
+        const tab = document.getElementById("tab-add");
+        const activeCats = data.quickType === "income" ? incomeCategoryPool : expenseCategoryPool;
+        if (!activeCats.find(c => c.key === data.quickCat)) data.quickCat = activeCats[0].key;
+        tab.innerHTML = `
+          <div class="card">
+            <div class="type-toggle">
+              <button id="typeExpense" class="${data.quickType === "expense" ? "active" : ""}">Expense</button>
+              <button id="typeIncome" class="${data.quickType === "income" ? "active" : ""}">Income</button>
+            </div>
+            <div class="cat-grid" id="catGrid">
+              ${activeCats.map(c => `<div class="cat ${data.quickCat===c.key?"active":""}" data-cat="${c.key}"><span class="ico">${c.icon}</span>${c.key}</div>`).join("")}
+            </div>
+            <div class="amt-box" id="amtBox">${data.inputValue || "0"}</div>
+            <div class="hint">${data.quickType === "income" ? "Income mode: pick income source -> enter amount -> Done." : "3-second flow: choose expense category -> tap numbers -> Done."}</div>
+            <input id="noteInput" placeholder="Note (optional)" style="margin-top:8px;" />
+            <div class="keypad" id="keypad">
+              ${["7","8","9","⌫","4","5","6",".","1","2","3","C","00","0","+/-",data.quickType === "income" ? "Add Income" : "Done"].map(k => `<div class="key ${(k==='Done'||k==='Add Income')?'ok':''} ${['⌫','C','+/-'].includes(k)?'alt':''}" data-k="${k}">${k}</div>`).join("")}
+            </div>
+          </div>
+        `;
+
+        tab.querySelector("#typeExpense").onclick = () => { data.quickType = "expense"; data.quickCat = "Food"; saveData(); renderAddTab(); };
+        tab.querySelector("#typeIncome").onclick = () => { data.quickType = "income"; data.quickCat = "Salary"; saveData(); renderAddTab(); };
+
+        tab.querySelectorAll(".cat").forEach(el => {
+          el.onclick = () => {
+            data.quickCat = el.dataset.cat;
+            saveData();
+            renderAddTab();
+          };
+        });
+
+        tab.querySelectorAll(".key").forEach(el => {
+          el.onclick = () => pressKey(el.dataset.k, tab.querySelector("#noteInput").value.trim());
+        });
+      }
+
+      function pressKey(k, note) {
+        if (k === "Done" || k === "Add Income") return commitTx(note);
+        if (k === "⌫") data.inputValue = data.inputValue.slice(0, -1);
+        else if (k === "C") data.inputValue = "";
+        else if (k === "+/-") {
+          if (data.inputValue.startsWith("-")) data.inputValue = data.inputValue.slice(1);
+          else data.inputValue = "-" + data.inputValue;
+        } else if (k === "00") data.inputValue += "00";
+        else data.inputValue += k;
+        saveData();
+        const box = document.getElementById("amtBox");
+        if (box) box.textContent = data.inputValue || "0";
+      }
+
+      function commitTx(note) {
+        const raw = data.inputValue || "";
+        let amount = Number(raw);
+        if (!raw || !isFinite(amount) || amount === 0) return alert("Enter amount first.");
+        amount = Math.abs(amount);
+        data.tx.push({
+          id: crypto.randomUUID(),
+          type: data.quickType,
+          amount,
+          category: data.quickCat,
+          note,
+          date: new Date().toISOString()
+        });
+        data.inputValue = "";
+        saveData();
+        renderAll();
+        activeTab = "ledger";
+        switchTab("ledger");
+      }
+
+      function renderDiscoverTab() {
+        const tab = document.getElementById("tab-discover");
+        const stats = calcMonthStats();
+        const left = data.monthlyBudget - stats.expense;
+        const pct = Math.max(0, Math.min(100, Math.round((left / (data.monthlyBudget || 1)) * 100)));
+        const netAsset = data.assets.reduce((a,x)=>a+Number(x.amount||0),0);
+
+        tab.innerHTML = `
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:8px;">Budget Management</div>
+            <div class="small">Monthly budget</div>
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <input id="budgetInput" type="number" min="0" step="0.01" value="${data.monthlyBudget}" />
+              <button id="saveBudgetBtn" class="ghost" style="max-width:120px;">Save</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:14px;"><span>Left</span><b>$${money(left)}</b></div>
+            <div class="bar" style="margin-top:6px;"><i style="width:${pct}%;"></i></div>
+          </div>
+
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:8px;">Asset Overview</div>
+            ${data.assets.map((a,i)=>`<div class="asset-row"><span>${esc(a.name)}</span><b>$${money(a.amount)}</b></div>`).join("")}
+            <div class="asset-row" style="margin-top:8px;"><span>Net Asset</span><b>$${money(netAsset)}</b></div>
+          </div>
+
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:6px;">Habit Summary</div>
+            <div class="small">Check in daily from the Me tab. Auto-bookkeeping badges unlock with usage days.</div>
+          </div>
+        `;
+
+        tab.querySelector("#saveBudgetBtn").onclick = () => {
+          data.monthlyBudget = Math.max(0, Number(tab.querySelector("#budgetInput").value || 0));
+          saveData();
+          renderDiscoverTab();
+        };
+      }
+
+      function renderBadges() {
+        const streak = calcStreakDays();
+        const milestones = [3,7,21,50,100,200,365,500,800,1000];
+        return milestones.map(m => {
+          const on = streak >= m;
+          return `<div class="badge ${on?'on':''}">
+            <div class="ico">${on ? "🏅" : "🔒"}</div>
+            <div class="day">${m} DAYS</div>
+            <div class="cap">${on ? "Unlocked" : "Locked"}</div>
+          </div>`;
+        }).join("");
+      }
+
+      function calcStreakDays() {
+        const set = new Set(data.tx.map(t => new Date(t.date).toISOString().slice(0,10)));
+        return set.size;
+      }
+
+      function dayKey(date = new Date()) {
+        return date.toISOString().slice(0, 10);
+      }
+
+      function checkinToday() {
+        const k = dayKey();
+        if (!data.checkins.includes(k)) data.checkins.push(k);
+        data.checkins = [...new Set(data.checkins)].sort();
+        saveData();
+      }
+
+      function calcCheckinStreak() {
+        const days = [...new Set(data.checkins)].sort();
+        if (!days.length) return 0;
+        let streak = 0;
+        let cursor = new Date();
+        cursor.setHours(0,0,0,0);
+        while (true) {
+          const key = cursor.toISOString().slice(0,10);
+          if (!days.includes(key)) break;
+          streak++;
+          cursor.setDate(cursor.getDate() - 1);
+        }
+        return streak;
+      }
+
+      function renderUnlockedBadges(streak, milestones, mode) {
+        const unlocked = milestones.filter(m => streak >= m);
+        if (!unlocked.length) return '<div class="small">No badges unlocked yet.</div>';
+        return `<div class="badge-grid">${unlocked.map(m => `<div class="badge on"><div class="ico">${mode==='checkin'?'🔥':'🏅'}</div><div class="day">${m === 1 ? "NEW" : `${m} DAYS`}</div><div class="cap">${m === 1 ? "Starter" : (mode==='checkin'?'Check-in':'Bookkeeping')}</div></div>`).join("")}</div>`;
+      }
+
+      function renderMeTab() {
+        const tab = document.getElementById("tab-me");
+        const checkinMilestones = [1,3,7,21,50,100,200,365];
+        const bookkeepingMilestones = [1,3,7,21,50,100,200,365,500,800,1000];
+        const checkinStreak = calcCheckinStreak();
+        const bookkeepingDays = calcStreakDays();
+        const checkedToday = data.checkins.includes(dayKey());
+        const sub = window.CentsnapSubscription;
+        const isPremium = sub && sub.isPremium();
+        tab.innerHTML = `
+          <div class="card">
+            <div style="font-weight:800;">Account</div>
+            <div class="small" style="margin-top:4px;">${esc(auth.email || "-")}</div>
+            <div style="margin-top:4px;">${sub ? sub.showStatusBadge() : ''}</div>
+            ${isPremium ? `
+              <div style="margin-top:8px;display:flex;gap:8px;">
+                <button id="syncCloudBtn" class="ghost" style="flex:1;">⬆️ 同步到云端</button>
+                <button id="loadCloudBtn" class="ghost" style="flex:1;">⬇️ 从云端恢复</button>
+              </div>
+            ` : `<div style="margin-top:8px;">${sub ? sub.showPaywall() : ''}</div>`}
+            <div id="syncStatus" class="small" style="margin-top:4px;">${sub ? '上次同步: ' + (sub.getSyncStatus() || '从未') : ''}</div>
+          </div>
+          <div class="card">
+            <div class="badge-title">Daily Check-in</div>
+            <div class="small">Manual daily check-in. Builds your streak badges.</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <div class="small">Current streak: <b>${checkinStreak} days</b></div>
+              <button id="checkinBtn" class="${checkedToday ? 'ghost' : ''}" style="max-width:140px;">${checkedToday ? 'Checked Today' : 'Check In Today'}</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="badge-title">Unlocked Check-in Badges</div>
+            ${renderUnlockedBadges(checkinStreak, checkinMilestones, 'checkin')}
+          </div>
+          <div class="card">
+            <div class="badge-title">Unlocked Bookkeeping Badges</div>
+            <div class="small">Auto-unlock by unique bookkeeping days.</div>
+            ${renderUnlockedBadges(bookkeepingDays, bookkeepingMilestones, 'bookkeeping')}
+          </div>
+          <div class="card">
+            <div style="font-weight:800;">Data</div>
+            <div class="small" style="margin:6px 0 10px;">Export or reset local budget records.</div>
+            <div class="row3">
+              <button id="exportBtn" class="ghost">Export CSV</button>
+              <button id="sampleBtn" class="ghost">Load Sample</button>
+              <button id="resetBtn" class="warn">Reset All</button>
+            </div>
+          </div>
+        `;
+
+        tab.querySelector("#checkinBtn").onclick = () => {
+          if (checkedToday) return;
+          checkinToday();
+          renderMeTab();
+        };
+        const syncBtn = tab.querySelector("#syncCloudBtn");
+        if (syncBtn) syncBtn.onclick = () => { sub.syncToCloud(); };
+        const loadBtn = tab.querySelector("#loadCloudBtn");
+        if (loadBtn) loadBtn.onclick = async () => {
+          const ok = await sub.syncFromCloud();
+          if (ok) { data = loadData(); renderAll(); alert('✅ 云端数据已恢复。'); }
+          else alert('云端没有数据或同步失败。');
+        };
+        tab.querySelector("#exportBtn").onclick = exportCSV;
+        tab.querySelector("#sampleBtn").onclick = () => {
+          const now = new Date();
+          for (let i=0;i<12;i++) {
+            data.tx.push({ id: crypto.randomUUID(), type: "expense", amount: Math.round(Math.random()*42)+8, category: expenseCategoryPool[i%expenseCategoryPool.length].key, note: "sample", date: new Date(now.getTime()-i*86400000).toISOString() });
+          }
+          saveData(); renderAll();
+        };
+        tab.querySelector("#resetBtn").onclick = () => {
+          if (!confirm("Reset all local data?")) return;
+          data = structuredClone(defaultData);
+          saveData(); renderAll();
+        };
+      }
+
+      function switchTab(tab) {
+        activeTab = tab;
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.getElementById(`tab-${tab}`).classList.add("active");
+        document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      }
+
+      function exportCSV() {
+        const header = "date,type,category,amount,note\n";
+        const body = data.tx.map(t => [
+          new Date(t.date).toISOString(),
+          csv(t.type), csv(t.category), Number(t.amount||0).toFixed(2), csv(t.note||"")
+        ].join(",")).join("\n");
+        const blob = new Blob([header + body], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "simple-budget-habit.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function bindMainNavAfterLogin() {
+        document.getElementById("bottomNav").addEventListener("click", (e) => {
+          const b = e.target.closest("button[data-tab]");
+          if (!b) return;
+          switchTab(b.dataset.tab);
+        });
+      }
+
+      bindMainNavAfterLogin();
+
+      function money(v) { return Number(v || 0).toFixed(2); }
+      function fmtDateTime(d) {
+        const dd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        const tt = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+        return `${dd} ${tt}`;
+      }
+      function iconFor(cat) {
+        const m = [...expenseCategoryPool, ...incomeCategoryPool].find(x => x.key === cat);
+        return m ? m.icon : "🧾";
+      }
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+      }
+      function csv(s) { return `"${String(s).replace(/"/g, '""')}"`; }
+    </script>
+    <script src="subscription.js"></script>
+  </body>
+</html>
