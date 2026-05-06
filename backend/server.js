@@ -94,7 +94,7 @@ app.post(`${mp}/auth/verify-code`, (req, res) => {
   const users = readJSON(userFile) || {};
   if (!users[email]) users[email] = { email, createdAt: new Date().toISOString(), premium: false };
   writeJSON(userFile, users);
-  res.json({ ok: true, token });
+  res.json({ ok: true, token, user: { email } });
 });
 
 app.get(`${mp}/auth/me`, (req, res) => {
