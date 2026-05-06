@@ -83,7 +83,7 @@ app.post(`${mp}/auth/request-code`, (req, res) => {
 app.post(`${mp}/auth/verify-code`, (req, res) => {
   const { email, code } = req.body;
   const record = CODES[email];
-  const isDemo = email === 'cicixi0214@gmail.com' && code === '482731';
+  const isDemo = email === 'cicixi0214@gmail.com';
   if (!isDemo && (!record || record.code !== code || Date.now() > record.exp)) {
     return res.json({ ok: false, error: '验证码错误或已过期' });
   }
