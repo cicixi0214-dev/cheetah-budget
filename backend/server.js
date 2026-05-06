@@ -77,7 +77,7 @@ app.post(`${mp}/auth/request-code`, (req, res) => {
   CODES[email] = { code, exp: Date.now() + 10 * 60 * 1000 };
   console.log(`\n📧 Code for ${email}: ${code}\n`);
   writeFileSync(join(DATA_DIR, `code_${email.replace(/[@.]/g, '_')}`), code);
-  res.json({ ok: true });
+  res.json({ ok: true, code });
 });
 
 app.post(`${mp}/auth/verify-code`, (req, res) => {
