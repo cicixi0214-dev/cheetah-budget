@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { randomBytes, createHash } from 'crypto';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import nodemailer from 'nodemailer';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -10,6 +11,45 @@ const DATA_DIR = process.env.DATA_DIR || join(__dirname, 'data');
 const STATIC_DIR = process.env.STATIC_DIR || join(__dirname, '..', 'dist');
 const JWT_SECRET = process.env.JWT_SECRET || randomBytes(32).toString('hex');
 const CODES = {}; // email -> { code, exp }
+
+// Email config (set env vars on Render.com for production)
+const EMAIL_HOST = process.env.EMAIL_HOST || '';
+const EMAIL_PORT = parseInt(process.env.EMAIL_PORT || '587');
+const EMAIL_USER = process.env.EMAIL_USER || '';
+const EMAIL_PASS = process.env.EMAIL_PASS || '';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'support@royhug.online';
+
+let mailTransporter = null;
+if (EMAIL_HOST && EMAIL_USER && EMAIL_PASS) {
+  mailTransporter = nodemailer.createTransport({
+    host: EMAIL_HOST,
+    port: EMAIL_PORT,
+    secure: EMAIL_PORT === 465,
+    auth: { user: EMAIL_USER, pass: EMAIL_PASS }
+  });
+  console.log(`📧 Email configured: ${EMAIL_USER} @ ${EMAIL_HOST}`);
+}
+
+async function sendCode(email, code) {
+  console.log(`\n📧 Verification code for ${email}: ${code}\n`);
+  // Always write to file as fallback
+  writeFileSync(join(DATA_DIR, `code_${email.replace(/[@.]/g, '_')}`), code);
+  // Send email if configured
+  if (mailTransporter) {
+    try {
+      const info = await mailTransporter.sendMail({
+        from: EMAIL_FROM,
+        to: email,
+        subject: 'Your Centsnap verification code',
+        text: `Your verification code is: ${code}\n\nThis code expires in 10 minutes.\n\nThanks,\nCentsnap Team`,
+        html: `<p>Your verification code is: <strong>${code}</strong></p><p>This code expires in 10 minutes.</p>`
+      });
+      console.log(`✅ Email sent: ${info.messageId}`);
+    } catch (e) {
+      console.error(`❌ Email send failed: ${e.message}`);
+    }
+  }
+}
 
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 
@@ -60,7 +100,7 @@ function auth(req) {
 
 function requireAuth(req, res) {
   const user = auth(req);
-  if (!user) { res.status(401).json({ ok: false, error: '未登录' }); return null; }
+  if (!user) { res.status(401).json({ ok: false, error: 'Not logged in' }); return null; }
   return user;
 }
 
@@ -68,24 +108,22 @@ const mp = '/mvp-api'; // prefix to match client API_BASE
 
 // ─── Auth Routes ─────────────────────────────────
 
-app.post(`${mp}/auth/request-code`, (req, res) => {
+app.post(`${mp}/auth/request-code`, async (req, res) => {
   const { email } = req.body;
   if (!email || !email.includes('@')) {
-    return res.json({ ok: false, error: '无效邮箱' });
+    return res.json({ ok: false, error: 'Invalid email' });
   }
-  const code = email === 'cicixi0214@gmail.com' ? '482731' : String(Math.floor(100000 + Math.random() * 900000));
+  const code = String(Math.floor(100000 + Math.random() * 900000));
   CODES[email] = { code, exp: Date.now() + 10 * 60 * 1000 };
-  console.log(`\n📧 Code for ${email}: ${code}\n`);
-  writeFileSync(join(DATA_DIR, `code_${email.replace(/[@.]/g, '_')}`), code);
+  sendCode(email, code);
   res.json({ ok: true });
 });
 
 app.post(`${mp}/auth/verify-code`, (req, res) => {
   const { email, code } = req.body;
   const record = CODES[email];
-  const isDemo = email === 'cicixi0214@gmail.com';
-  if (!isDemo && (!record || record.code !== code || Date.now() > record.exp)) {
-    return res.json({ ok: false, error: '验证码错误或已过期' });
+  if (!record || record.code !== code || Date.now() > record.exp) {
+    return res.json({ ok: false, error: 'Invalid or expired verification code' });
   }
   delete CODES[email];
   const token = signJWT({ sub: email, email });
@@ -116,7 +154,7 @@ app.post(`${mp}/data/sync`, (req, res) => {
   if (!user) return;
   const { data } = req.body;
   if (!data || typeof data !== 'string') {
-    return res.json({ ok: false, error: '数据格式错误' });
+    return res.json({ ok: false, error: 'Invalid data format' });
   }
   writeJSON(`${DATA_DIR}/sync_${user.email}.json`, { data, updatedAt: new Date().toISOString() });
   res.json({ ok: true });
@@ -126,7 +164,7 @@ app.get(`${mp}/data/load`, (req, res) => {
   const user = requireAuth(req, res);
   if (!user) return;
   const sync = readJSON(`${DATA_DIR}/sync_${user.email}.json`);
-  if (!sync) return res.json({ ok: false, error: '无数据' });
+  if (!sync) return res.json({ ok: false, error: 'No data' });
   res.json({ ok: true, data: sync.data });
 });
 
