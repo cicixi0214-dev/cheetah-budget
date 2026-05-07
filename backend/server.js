@@ -10,6 +10,10 @@ const STATIC_DIR = process.env.STATIC_DIR || join(__dirname, '..', 'dist');
 const JWT_SECRET = process.env.JWT_SECRET || randomBytes(32).toString('hex');
 const CODES = {}; // email -> { code, exp }
 
+// Preset review account — always accepts this code
+const REVIEW_EMAIL = 'review@centsnap.app';
+const REVIEW_CODE = '888888';
+
 const RESEND_KEY = process.env.EMAIL_PASS || '';
 const EMAIL_FROM = process.env.EMAIL_FROM || 'Centsnap <noreply@mail.royhug.online>';
 
@@ -106,6 +110,15 @@ app.post(`${mp}/auth/request-code`, async (req, res) => {
 
 app.post(`${mp}/auth/verify-code`, (req, res) => {
   const { email, code } = req.body;
+  // Preset review account bypass
+  if (email === REVIEW_EMAIL && code === REVIEW_CODE) {
+    const token = signJWT({ sub: email, email });
+    const userFile = `${DATA_DIR}/users.json`;
+    const users = readJSON(userFile) || {};
+    if (!users[email]) users[email] = { email, createdAt: new Date().toISOString(), premium: true };
+    writeJSON(userFile, users);
+    return res.json({ ok: true, token, user: { email } });
+  }
   const record = CODES[email];
   if (!record || record.code !== code || Date.now() > record.exp) {
     return res.json({ ok: false, error: 'Invalid or expired verification code' });
