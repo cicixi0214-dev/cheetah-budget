@@ -11,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || randomBytes(32).toString('hex');
 const CODES = {}; // email -> { code, exp }
 
 const RESEND_KEY = process.env.EMAIL_PASS || '';
-const EMAIL_FROM = process.env.EMAIL_FROM || 'Centsnap <support@royhug.online>';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'Centsnap <noreply@mail.royhug.online>';
 
 async function sendCode(email, code) {
   console.log(`\n📧 Verification code for ${email}: ${code}\n`);
