@@ -3,8 +3,6 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { randomBytes, createHash } from 'crypto';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import nodemailer from 'nodemailer';
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.DATA_DIR || join(__dirname, 'data');
@@ -12,42 +10,29 @@ const STATIC_DIR = process.env.STATIC_DIR || join(__dirname, '..', 'dist');
 const JWT_SECRET = process.env.JWT_SECRET || randomBytes(32).toString('hex');
 const CODES = {}; // email -> { code, exp }
 
-// Email config (set env vars on Render.com for production)
-const EMAIL_HOST = process.env.EMAIL_HOST || '';
-const EMAIL_PORT = parseInt(process.env.EMAIL_PORT || '587');
-const EMAIL_USER = process.env.EMAIL_USER || '';
-const EMAIL_PASS = process.env.EMAIL_PASS || '';
-const EMAIL_FROM = process.env.EMAIL_FROM || 'support@royhug.online';
-
-let mailTransporter = null;
-if (EMAIL_HOST && EMAIL_USER && EMAIL_PASS) {
-  mailTransporter = nodemailer.createTransport({
-    host: EMAIL_HOST,
-    port: EMAIL_PORT,
-    secure: EMAIL_PORT === 465,
-    auth: { user: EMAIL_USER, pass: EMAIL_PASS }
-  });
-  console.log(`📧 Email configured: ${EMAIL_USER} @ ${EMAIL_HOST}`);
-}
+const RESEND_KEY = process.env.EMAIL_PASS || '';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'Centsnap <support@royhug.online>';
 
 async function sendCode(email, code) {
   console.log(`\n📧 Verification code for ${email}: ${code}\n`);
-  // Always write to file as fallback
   writeFileSync(join(DATA_DIR, `code_${email.replace(/[@.]/g, '_')}`), code);
-  // Send email if configured
-  if (mailTransporter) {
-    try {
-      const info = await mailTransporter.sendMail({
+  if (!RESEND_KEY) { console.log('⚠️  No EMAIL_PASS set — code only in logs.'); return; }
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         from: EMAIL_FROM,
         to: email,
         subject: 'Your Centsnap verification code',
         text: `Your verification code is: ${code}\n\nThis code expires in 10 minutes.\n\nThanks,\nCentsnap Team`,
         html: `<p>Your verification code is: <strong>${code}</strong></p><p>This code expires in 10 minutes.</p>`
-      });
-      console.log(`✅ Email sent: ${info.messageId}`);
-    } catch (e) {
-      console.error(`❌ Email send failed: ${e.message}`);
-    }
+      })
+    });
+    if (r.ok) console.log(`✅ Email sent: ${await r.text()}`);
+    else console.error(`❌ Resend API error: ${r.status} ${await r.text()}`);
+  } catch (e) {
+    console.error(`❌ Email send failed: ${e.message}`);
   }
 }
 
