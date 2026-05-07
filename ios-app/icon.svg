@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A8F6C"/>
+      <stop offset="100%" stop-color="#06C258"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0F5F2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded rect background -->
+  <rect width="1024" height="1024" rx="200" fill="url(#bg)"/>
+
+  <!-- Card shadow -->
+  <rect x="212" y="330" width="600" height="400" rx="40" fill="rgba(0,0,0,0.1)" transform="translate(8,8)"/>
+
+  <!-- Card body -->
+  <rect x="212" y="330" width="600" height="390" rx="40" fill="url(#card)"/>
+
+  <!-- Card chip / circle decoration -->
+  <ellipse cx="340" cy="420" rx="35" ry="25" fill="#D4E8DD"/>
+  <circle cx="630" cy="420" r="12" fill="#D4E8DD"/>
+  <circle cx="690" cy="420" r="12" fill="#D4E8DD"/>
+
+  <!-- "C" letter large -->
+  <text x="512" y="575" font-family="'SF Pro Display', 'Helvetica Neue', Helvetica, sans-serif" font-size="240" font-weight="700" fill="#0A8F6C" text-anchor="middle" dominant-baseline="central">C</text>
+
+  <!-- Dollar sign accent -->
+  <circle cx="660" cy="640" r="55" fill="#06C258"/>
+  <text x="660" y="644" font-family="'SF Pro Display', 'Helvetica Neue', Helvetica, sans-serif" font-size="60" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">$</text>
+
+  <!-- Bottom line decoration -->
+  <rect x="340" y="660" width="344" height="4" rx="2" fill="#E0EDE6"/>
+</svg>

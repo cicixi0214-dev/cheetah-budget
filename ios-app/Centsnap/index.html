@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
+    <script>window.addEventListener('load',function(){var m=document.querySelector('meta[name=viewport]');if(m)m.content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0';});</script>
+    <title>Cheetah Budget - App MVP</title>
+    <style>
+      :root {
+        --yellow: #f2d451;
+        --yellow-deep: #e8c738;
+        --bg: #f4f5f7;
+        --ink: #151515;
+        --muted: #6b7280;
+        --line: #d9dde3;
+        --card: #ffffff;
+        --accent: #111827;
+        --ok: #0f766e;
+        --danger: #be123c;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0; padding: 0;
+        width: 100%; max-width: 100%; overflow-x: hidden;
+        font-family: "Avenir Next", "SF Pro Display", "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      .app {
+        max-width: 430px;
+        margin: 0 auto;
+        min-height: 100vh;
+        position: relative;
+        padding-bottom: 60px;
+        background: #fff;
+        position: relative;
+        box-shadow: 0 0 0 1px #e9edf3;
+      }
+      .top {
+        background: var(--yellow);
+        padding: 14px 14px 10px;
+        border-bottom: 1px solid #ecd673;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: -0.01em;
+      }
+      .small { font-size: 12px; color: #4b5563; }
+      .auth {
+        margin-top: 10px;
+        background: rgba(255,255,255,0.72);
+        border: 1px solid rgba(0,0,0,0.08);
+        border-radius: 12px;
+        padding: 10px;
+      }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+      input, button, select {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        padding: 9px 10px;
+        font-size: 14px;
+      }
+      input[type=checkbox] { width:auto; padding:0; border:none; border-radius:0; }
+      button {
+        border: 0;
+        font-weight: 700;
+        cursor: pointer;
+        color: #fff;
+        background: #1f2937;
+      }
+      button.ghost { background: #eef2ff; color: #1e3a8a; border: 1px solid #c7d2fe; }
+      button.warn { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+      .status {
+        margin-top: 8px;
+        border: 1px solid #d1d5db;
+        background: #f9fafb;
+        border-radius: 8px;
+        font-size: 12px;
+        padding: 7px 8px;
+      }
+      .status.ok { border-color: #86efac; background: #ecfdf5; color: #065f46; }
+      .status.err { border-color: #fdba74; background: #fff7ed; color: #9a3412; }
+
+      .shell { display: none; padding-bottom: 74px; }
+      .tab { display: none; padding: 12px; }
+      .tab.active { display: block; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .kpi .k { font-size: 12px; color: var(--muted); }
+      .kpi .v { font-size: 23px; font-weight: 800; margin-top: 2px; }
+
+      .type-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+      .type-toggle button.active { background: #1f2937; color: #fff; }
+      .type-toggle button:not(.active) { background: #eef1f5; color: #475569; border: 1px solid #d8dee6; }
+
+      .cat-grid {
+        margin-top: 6px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      .cat {
+        border: 1px solid #d7dde6;
+        border-radius: 10px;
+        padding: 5px 4px;
+        text-align: center;
+        background: #f2f4f7;
+        font-size: 11px;
+        cursor: pointer;
+      }
+      .cat .ico {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        margin: 0 auto 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+      }
+      .cat.active { background: #fff4bf; border-color: #eab308; }
+      .cat.active .ico { background: #fde68a; border-color: #facc15; }
+      .cat .ico svg { width: 20px; height: 20px; color: #6b7280; }
+      .cat.active .ico svg { color: #111827; }
+
+      .amt-box {
+        margin-top: 6px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 6px 10px;
+        font-size: 28px;
+        font-weight: 800;
+        text-align: right;
+        letter-spacing: 1px;
+      }
+      .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+      .keypad {
+        margin-top: 6px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      .key {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff;
+        padding: 10px 0;
+        text-align: center;
+        font-size: 19px;
+        cursor: pointer;
+      }
+      .key.ok { background: var(--yellow); font-weight: 800; }
+      .key.alt { background: #f3f4f6; color: #374151; font-size: 15px; }
+
+      .tx { border-bottom: 1px solid #f1f5f9; padding: 10px 0; display: flex; justify-content: space-between; gap: 10px; }
+      .tx:last-child { border-bottom: 0; }
+      .tx .left { min-width: 0; }
+      .tx .name { font-weight: 700; font-size: 14px; }
+      .tx .meta { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .tx .amt { font-weight: 800; }
+      .tx .amt.expense { color: #b91c1c; }
+      .tx .amt.income { color: #047857; }
+
+      .bar {
+        height: 10px;
+        border-radius: 999px;
+        background: #e5e7eb;
+        overflow: hidden;
+      }
+      .bar > i { display: block; height: 100%; background: #facc15; }
+
+      .asset-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eef2f7; }
+      .asset-row:last-child { border-bottom: 0; }
+
+      .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+      .badge {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 8px 6px;
+        text-align: center;
+        font-size: 11px;
+        background: #fff;
+      }
+      .badge .ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        margin: 0 auto 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f4f6;
+        color: #6b7280;
+        font-size: 16px;
+      }
+      .badge .day { font-weight: 800; font-size: 14px; }
+      .badge .cap { color: #6b7280; font-size: 10px; margin-top: 1px; }
+      .badge.on {
+        background: #fff7cc;
+        border-color: #facc15;
+      }
+      .badge.on .ico {
+        background: #facc15;
+        color: #111827;
+      }
+      .badge-title { font-weight: 800; margin-bottom: 6px; }
+      .tx .name svg, .card span svg { vertical-align: middle; }
+
+      .nav {
+        position: fixed;
+        left: 50%; bottom: 0;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 430px;
+        background: #fff;
+        border-top: 1px solid #e5e7eb;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        padding: 6px 4px 8px;
+        z-index: 100;
+      }
+      .nav button {
+        background: transparent;
+        color: #6b7280;
+        border: 0;
+        border-radius: 10px;
+        padding: 8px 2px;
+        font-size: 11px;
+      }
+      .nav button .i { display: block; margin-bottom: 3px; }
+      .nav button .i svg { width: 22px; height: 22px; display: block; margin: 0 auto; color: var(--muted); }
+      .nav button.active .i svg { color: var(--ink); }
+      .nav button.active { color: #111827; font-weight: 800; }
+      .nav button.mid {
+        transform: translateY(-12px);
+        display: flex; flex-direction: column; align-items: center; gap: 0;
+      }
+      .nav button.mid .i {
+        display: flex;
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        align-items: center;
+        justify-content: center;
+        background: var(--yellow);
+        box-shadow: 0 6px 16px rgba(234, 179, 8, 0.35);
+      }
+
+      @media (max-width: 420px) {
+        .cat-grid { grid-template-columns: repeat(3, 1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <div class="brand" id="brandArea">
+          <div id="headerUser" style="display:none;align-items:center;gap:10px;">
+            <div id="headerAvatar" style="width:36px;height:36px;border-radius:999px;background:#d1d5db;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#4b5563;flex-shrink:0;overflow:hidden;"></div>
+            <div>
+              <div id="headerName" style="font-weight:700;font-size:15px;"></div>
+              <div id="headerEmail" class="small"></div>
+            </div>
+          </div>
+          <h1 id="headerTitle" style="font-size:20px;">Cheetah Budget</h1>
+        </div>
+
+        <section id="authSection" class="auth">
+          <div class="row">
+            <input id="email" type="email" placeholder="you@email.com" />
+            <input id="code" maxlength="6" placeholder="6-digit code" />
+          </div>
+          <div class="row3">
+            <button id="requestCodeBtn" class="ghost" type="button">Get Code</button>
+            <button id="loginBtn" type="button">Register / Login</button>
+            <button onclick="window.logout()" class="warn" type="button">Logout</button>
+          </div>
+          <div id="authStatus" class="status">Not logged in.</div>
+        </section>
+      </header>
+
+      <main id="shell" class="shell">
+        <section id="tab-ledger" class="tab active"></section>
+        <section id="tab-chart" class="tab"></section>
+        <section id="tab-add" class="tab"></section>
+        <section id="tab-discover" class="tab"></section>
+        <section id="tab-me" class="tab"></section>
+      </main>
+
+      <nav id="bottomNav" class="nav" style="display:none;">
+        <button data-tab="ledger" class="active"><span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg></span>Ledger</button>
+        <button data-tab="chart"><span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="10"/><line x1="10" y1="20" x2="10" y2="6"/><line x1="16" y1="20" x2="16" y2="12"/><line x1="22" y1="20" x2="22" y2="4"/></svg></span>Charts</button>
+        <button data-tab="add" class="mid"><span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>Add</button>
+        <button data-tab="discover"><span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88"/></svg></span>Discover</button>
+        <button data-tab="me"><span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>Me</button>
+      </nav>
+    </div>
+
+    <script>
+      // Show JS errors on screen for debugging
+      window.onerror = function(m, u, l) {
+        var d = document.getElementById('dbg_err') || (function(){
+          var e = document.createElement('div');
+          e.id = 'dbg_err';
+          e.style.cssText = 'position:fixed;bottom:80px;left:4px;right:4px;z-index:999;background:#be123c;color:#fff;padding:6px 8px;font-size:11px;white-space:pre-wrap;max-height:90px;overflow:auto;border-radius:6px;';
+          document.body.appendChild(e);
+          return e;
+        })();
+        d.textContent = d.textContent + '\n⚠️ ' + m;
+      };
+
+      const API_BASE = "https://cheetah-budget.onrender.com/mvp-api";
+      const TOKEN_KEY = "sbh3_token";
+      const EMAIL_KEY = "sbh3_email";
+      const STORE_KEY = "sbh3_data";
+
+      // SVG icon system — minimalist line-art style with currentColor
+      function svg(d) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; }
+      var ICON = {
+        food: svg('<path d="M6 2v10a4 4 0 0 0 4 4v6"/><path d="M18 2v20"/><path d="M14 2v8a3 3 0 0 0 3 3"/>'),
+        shopping: svg('<path d="M4 7l2-5h12l2 5"/><path d="M4 7v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7"/><path d="M8 12a4 4 0 0 0 8 0"/>'),
+        daily: svg('<path d="M3 10l9-7 9 7"/><path d="M9 21V11h6v10"/>'),
+        transport: svg('<rect x="3" y="7" width="18" height="12" rx="2"/><line x1="3" y1="11" x2="21" y2="11"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>'),
+        groceries: svg('<path d="M21 10H3l2 10h14l2-10z"/><line x1="8" y1="6" x2="6" y2="10"/><line x1="16" y1="6" x2="18" y2="10"/>'),
+        fruits: svg('<circle cx="12" cy="13" r="7"/><path d="M12 6V4"/><path d="M16 5c-2-2-6-2-8 0"/>'),
+        snacks: svg('<circle cx="12" cy="12" r="9"/><circle cx="9" cy="9" r="1.2" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/><circle cx="11" cy="16" r="1.5" fill="currentColor"/>'),
+        fitness: svg('<rect x="3" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/><line x1="7" y1="12" x2="17" y2="12"/>'),
+        fun: svg('<polygon points="12,2 15.5,9 23,9 17,14 19.5,22 12,17 4.5,22 7,14 1,9 8.5,9"/>'),
+        phone: svg('<rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/>'),
+        clothes: svg('<path d="M7 2h10l3 4-4 3v13H8V9L4 6l3-4z"/>'),
+        beauty: svg('<path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>'),
+        home: svg('<path d="M3 10l9-7 9 7"/><path d="M9 21V11h6v10"/>'),
+        kids: svg('<polygon points="10,4 20,12 10,20"/><line x1="4" y1="8" x2="4" y2="16"/><line x1="8" y1="6" x2="8" y2="18"/>'),
+        pet: svg('<circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/><circle cx="6" cy="15" r="2"/><circle cx="18" cy="15" r="2"/><path d="M9 17c1.5 1.5 4.5 1.5 6 0"/>'),
+        other: svg('<circle cx="8" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="16" cy="12" r="1.5" fill="currentColor"/>'),
+        salary: svg('<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M4 14h4a3 3 0 0 0 6 0h4"/><path d="M9 5l3-3 3 3"/>'),
+        bonus: svg('<rect x="4" y="6" width="16" height="14" rx="2"/><line x1="12" y1="2" x2="12" y2="10"/><line x1="8" y1="6" x2="8" y2="20"/><line x1="16" y1="6" x2="16" y2="20"/>'),
+        freelance: svg('<rect x="4" y="4" width="16" height="12" rx="2" ry="2"/><path d="M8 20h8"/><path d="M12 16v4"/>'),
+        business: svg('<rect x="4" y="8" width="16" height="12"/><path d="M8 8V5h8v3"/><line x1="10" y1="12" x2="10" y2="16"/><line x1="14" y1="12" x2="14" y2="16"/>'),
+        investment: svg('<polyline points="2,20 8,14 13,17 22,6"/><polyline points="18,6 22,6 22,10"/>'),
+        gift: svg('<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 20V8"/><path d="M4 8h16"/><path d="M8 8c0-2 1-4 4-4s4 2 4 4"/>'),
+        refund: svg('<polyline points="9 14 4 9 9 4"/><path d="M20 9v2a6 6 0 0 1-6 6H4"/>'),
+      };
+
+      const expenseCategoryPool = [
+        { key: "Food", icon: ICON.food },
+        { key: "Shopping", icon: ICON.shopping },
+        { key: "Daily", icon: ICON.daily },
+        { key: "Transport", icon: ICON.transport },
+        { key: "Groceries", icon: ICON.groceries },
+        { key: "Fruits", icon: ICON.fruits },
+        { key: "Snacks", icon: ICON.snacks },
+        { key: "Fitness", icon: ICON.fitness },
+        { key: "Fun", icon: ICON.fun },
+        { key: "Phone", icon: ICON.phone },
+        { key: "Clothes", icon: ICON.clothes },
+        { key: "Beauty", icon: ICON.beauty },
+        { key: "Home", icon: ICON.home },
+        { key: "Kids", icon: ICON.kids },
+        { key: "Pet", icon: ICON.pet },
+        { key: "Other", icon: ICON.other }
+      ];
+      const incomeCategoryPool = [
+        { key: "Salary", icon: ICON.salary },
+        { key: "Bonus", icon: ICON.bonus },
+        { key: "Freelance", icon: ICON.freelance },
+        { key: "Business", icon: ICON.business },
+        { key: "Investment", icon: ICON.investment },
+        { key: "Gift", icon: ICON.gift },
+        { key: "Refund", icon: ICON.refund },
+        { key: "Other", icon: ICON.other }
+      ];
+
+      const defaultData = {
+        monthlyBudget: 1200,
+        tx: [],
+        assets: [
+          { name: "Cash", amount: 250 },
+          { name: "Checking", amount: 1800 },
+          { name: "Savings", amount: 3500 },
+          { name: "Credit Card", amount: -320 }
+        ],
+        quickCat: "Food",
+        quickType: "expense",
+        inputValue: "",
+        checkins: [],
+        profile: { username: "", avatar: "", showEmail: true },
+        budgets: {}
+      };
+
+      let auth = { token: localStorage.getItem(TOKEN_KEY) || "", email: localStorage.getItem(EMAIL_KEY) || "" };
+      let data = loadData();
+      let activeTab = "ledger";
+
+      const api = {
+        requestCode: (email) => fetch(`${API_BASE}/auth/request-code`, {
+          method: "POST", headers: headers(), body: JSON.stringify({ email })
+        }).then(r => r.json()),
+        verifyCode: (email, code) => fetch(`${API_BASE}/auth/verify-code`, {
+          method: "POST", headers: headers(), body: JSON.stringify({ email, code })
+        }).then(r => r.json()),
+        me: () => fetch(`${API_BASE}/auth/me`, { headers: headers() }).then(r => r.json()),
+        logout: () => fetch(`${API_BASE}/auth/logout`, { method: "POST", headers: headers() }).then(r => r.json())
+      };
+
+      bindAuth();
+      bindNav();
+      checkAuth();
+
+      function headers() {
+        const h = { "Content-Type": "application/json" };
+        if (auth.token) h.Authorization = `Bearer ${auth.token}`;
+        return h;
+      }
+
+      function loadData() {
+        try {
+          const raw = localStorage.getItem(STORE_KEY);
+          if (!raw) return structuredClone(defaultData);
+          const p = JSON.parse(raw);
+          return {
+            monthlyBudget: Number(p.monthlyBudget || 0),
+            tx: Array.isArray(p.tx) ? p.tx : [],
+            assets: Array.isArray(p.assets) ? p.assets : structuredClone(defaultData.assets),
+            quickCat: p.quickCat || "Food",
+            quickType: p.quickType || "expense",
+            inputValue: p.inputValue || "",
+            checkins: Array.isArray(p.checkins) ? p.checkins : [],
+            profile: p.profile ? { username: p.profile.username || "", avatar: p.profile.avatar || "", showEmail: p.profile.showEmail !== false } : { username: "", avatar: "", showEmail: true },
+            budgets: p.budgets || {}
+          };
+        } catch {
+          return structuredClone(defaultData);
+        }
+      }
+
+      function saveData() {
+        localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      }
+
+      function setStatus(text, cls = "") {
+        const el = document.getElementById("authStatus");
+        el.textContent = text;
+        el.className = `status ${cls}`.trim();
+      }
+
+      function fixViewport() {
+        var m = document.querySelector('meta[name=viewport]');
+        if (m) m.content = 'width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0';
+      }
+
+      function syncAuthUI() {
+        document.getElementById("email").value = auth.email || "";
+        document.getElementById("authSection").style.display = auth.token ? "none" : "block";
+        document.getElementById("shell").style.display = auth.token ? "block" : "none";
+        document.getElementById("bottomNav").style.display = auth.token ? "grid" : "none";
+        if (!auth.token) setStatus("Not logged in. Register/Login to use app.", "err");
+        updateHeaderUser();
+        if (auth.token) setTimeout(fixViewport, 100);
+      }
+
+      function updateHeaderUser() {
+        const hu = document.getElementById("headerUser");
+        const ht = document.getElementById("headerTitle");
+        if (!auth.token || !data.profile) {
+          hu.style.display = "none";
+          ht.style.display = "block";
+          return;
+        }
+        hu.style.display = "flex";
+        ht.style.display = "none";
+        const av = document.getElementById("headerAvatar");
+        if (data.profile.avatar) {
+          av.innerHTML = `<img src="${data.profile.avatar}" style="width:36px;height:36px;border-radius:999px;object-fit:cover;">`;
+          av.style.background = "none";
+        } else {
+          av.textContent = (data.profile.username || auth.email[0] || "?").toUpperCase();
+          av.style.background = "#d1d5db";
+        }
+        document.getElementById("headerName").textContent = data.profile.username || auth.email.split("@")[0];
+        document.getElementById("headerEmail").textContent = data.profile.showEmail ? auth.email : "";
+      }
+
+      function bindAuth() {
+        document.getElementById("requestCodeBtn").onclick = async () => {
+          const email = document.getElementById("email").value.trim().toLowerCase();
+          if (!email) return alert("Please enter email.");
+          setStatus("Sending verification code...", "");
+          try {
+            const r = await api.requestCode(email);
+            if (!r.ok) return setStatus(`Code request failed: ${r.error || "unknown"}`, "err");
+            setStatus(`Code sent to ${email}`, "ok");
+          } catch (e) {
+            setStatus("Network error. Check your connection and try again.", "err");
+          }
+        };
+
+        document.getElementById("loginBtn").onclick = async () => {
+          const email = document.getElementById("email").value.trim().toLowerCase();
+          const code = document.getElementById("code").value.trim();
+          if (!email || !code) return alert("Enter email and code.");
+          const r = await api.verifyCode(email, code);
+          if (!r.ok) return setStatus(`Login failed: ${r.error || "invalid"}`, "err");
+          auth.token = r.token;
+          auth.email = r.user.email;
+          localStorage.setItem(TOKEN_KEY, auth.token);
+          localStorage.setItem(EMAIL_KEY, auth.email);
+          document.getElementById("code").value = "";
+          syncAuthUI();
+          setStatus(`Logged in as ${auth.email}`, "ok");
+          renderAll();
+        };
+      }
+
+      window.logout = async function() {
+        if (auth.token) await api.logout().catch(() => ({}));
+        auth.token = ""; auth.email = "";
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(EMAIL_KEY);
+        saveData();
+        syncAuthUI();
+        renderAll();
+      };
+      window.deleteAccount = async function() {
+        if (!confirm("Delete your account and all data? This cannot be undone.")) return;
+        if (auth.token) await api.logout().catch(() => ({}));
+        auth.token = ""; auth.email = "";
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(EMAIL_KEY);
+        data = structuredClone(defaultData);
+        saveData();
+        syncAuthUI();
+        renderAll();
+      };
+
+      async function checkAuth() {
+        if (!auth.token) {
+          syncAuthUI();
+          return;
+        }
+        const me = await api.me().catch(() => ({ ok: false }));
+        if (!me.ok) {
+          // Offline mode — use cached session
+          syncAuthUI();
+          renderAll();
+          return;
+        }
+        auth.email = me.user.email;
+        localStorage.setItem(EMAIL_KEY, auth.email);
+        syncAuthUI();
+        setStatus(`Logged in as ${auth.email}`, "ok");
+        renderAll();
+      }
+
+      function bindNav() {
+        document.getElementById("bottomNav").addEventListener("click", (e) => {
+          const btn = e.target.closest("button[data-tab]");
+          if (!btn) return;
+          activeTab = btn.dataset.tab;
+          for (const b of document.querySelectorAll(".nav button")) b.classList.toggle("active", b === btn);
+          for (const t of document.querySelectorAll(".tab")) t.classList.remove("active");
+          document.getElementById(`tab-${activeTab}`).classList.add("active");
+          if (activeTab === "add") renderAddTab();
+        });
+      }
+
+      function renderAll() {
+        renderLedgerTab();
+        renderChartTab();
+        renderAddTab();
+        renderDiscoverTab();
+        renderMeTab();
+      }
+
+      function monthKey(d) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, "0")}`;
+      }
+
+      function calcMonthStats() {
+        const now = new Date();
+        const mk = monthKey(now);
+        let income = 0, expense = 0;
+        for (const t of data.tx) {
+          const d = new Date(t.date);
+          if (monthKey(d) !== mk) continue;
+          if (t.type === "income") income += t.amount;
+          else expense += t.amount;
+        }
+        return { income, expense, balance: income - expense };
+      }
+
+      function renderLedgerTab() {
+        const stats = calcMonthStats();
+        const tab = document.getElementById("tab-ledger");
+        const sorted = [...data.tx].sort((a,b) => new Date(b.date) - new Date(a.date));
+        tab.innerHTML = `
+          <div class="card">
+            <div class="kpi-grid">
+              <div class="kpi"><div class="k">This Month Income</div><div class="v">$${money(stats.income)}</div></div>
+              <div class="kpi"><div class="k">This Month Expense</div><div class="v">$${money(stats.expense)}</div></div>
+              <div class="kpi"><div class="k">Balance</div><div class="v">$${money(stats.balance)}</div></div>
+              <div class="kpi"><div class="k">Entries</div><div class="v">${sorted.length}</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:6px;">Ledger</div>
+            ${sorted.map(tx => `
+              <div class="tx" data-id="${tx.id}">
+                <div class="left">
+                  <div class="name">${iconFor(tx.category,16)} ${esc(tx.category)}</div>
+                  <div class="meta">${fmtDateTime(new Date(tx.date))}${tx.note ? ` · ${esc(tx.note)}` : ""}</div>
+                </div>
+                <div class="amt ${tx.type}">${tx.type === "expense" ? "-" : "+"}$${money(tx.amount)}</div>
+              </div>
+            `).join("") || '<div class="small">No entries yet.</div>'}
+          </div>
+        `;
+
+        tab.querySelectorAll(".tx").forEach(el => {
+          el.addEventListener("click", () => quickEdit(el.dataset.id));
+        });
+      }
+
+      function quickEdit(id) {
+        const t = data.tx.find(x => x.id === id);
+        if (!t) return;
+        const val = prompt("Edit amount", String(t.amount));
+        if (val === null) return;
+        const num = Number(val);
+        if (!num || num <= 0) return alert("Invalid amount");
+        t.amount = num;
+        saveData();
+        renderAll();
+      }
+
+      function renderChartTab() {
+        const tab = document.getElementById("tab-chart");
+        const stats = calcMonthStats();
+        const isPremium = window.CentsnapSubscription && window.CentsnapSubscription.isPremium();
+
+        if (!isPremium) {
+          tab.innerHTML = `
+            <div class="card">
+              <div style="font-weight:800;margin-bottom:8px;">Spending Trend</div>
+              <div class="small">You spent $${money(stats.expense)} this month.</div>
+            </div>
+            ${window.CentsnapSubscription ? window.CentsnapSubscription.showPaywall() : ''}
+          `;
+          return;
+        }
+
+        const map = new Map();
+        for (const t of data.tx) {
+          if (t.type !== "expense") continue;
+          map.set(t.category, (map.get(t.category) || 0) + t.amount);
+        }
+        const total = [...map.values()].reduce((a,b)=>a+b,0) || 1;
+        const top = [...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+        tab.innerHTML = `
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:8px;">Spending Trend</div>
+            <div class="small">You spent $${money(stats.expense)} this month.</div>
+          </div>
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:8px;">Top Categories</div>
+            ${top.map(([k,v]) => `
+              <div style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>${iconFor(k,16)} ${esc(k)}</span><span>${((v/total)*100).toFixed(1)}%</span></div>
+                <div class="bar"><i style="width:${Math.max(3,(v/total)*100)}%"></i></div>
+              </div>
+            `).join("") || '<div class="small">Add expenses to see chart.</div>'}
+          </div>
+        `;
+      }
+
+      function renderAddTab() {
+        const tab = document.getElementById("tab-add");
+        const activeCats = data.quickType === "income" ? incomeCategoryPool : expenseCategoryPool;
+        if (!activeCats.find(c => c.key === data.quickCat)) data.quickCat = activeCats[0].key;
+        tab.innerHTML = `
+          <div class="card">
+            <div class="type-toggle">
+              <button id="typeExpense" class="${data.quickType === "expense" ? "active" : ""}">Expense</button>
+              <button id="typeIncome" class="${data.quickType === "income" ? "active" : ""}">Income</button>
+            </div>
+            <div class="cat-grid" id="catGrid">
+              ${activeCats.map(c => `<div class="cat ${data.quickCat===c.key?"active":""}" data-cat="${c.key}"><span class="ico">${c.icon}</span>${c.key}</div>`).join("")}
+            </div>
+            <div class="amt-box" id="amtBox">${data.inputValue || "0"}</div>
+            <input id="noteInput" placeholder="Note (optional)" style="margin-top:4px;" />
+            <div class="keypad" id="keypad">
+              ${["7","8","9","⌫","4","5","6",".","1","2","3","C","00","0","+/-",data.quickType === "income" ? "Add Income" : "Done"].map(k => `<div class="key ${(k==='Done'||k==='Add Income')?'ok':''} ${['⌫','C','+/-'].includes(k)?'alt':''}" data-k="${k}">${k}</div>`).join("")}
+            </div>
+          </div>
+        `;
+
+        tab.querySelector("#typeExpense").onclick = () => { data.quickType = "expense"; data.quickCat = "Food"; saveData(); renderAddTab(); };
+        tab.querySelector("#typeIncome").onclick = () => { data.quickType = "income"; data.quickCat = "Salary"; saveData(); renderAddTab(); };
+
+        tab.querySelectorAll(".cat").forEach(el => {
+          el.onclick = () => {
+            data.quickCat = el.dataset.cat;
+            saveData();
+            renderAddTab();
+          };
+        });
+
+        tab.querySelectorAll(".key").forEach(el => {
+          el.onclick = () => pressKey(el.dataset.k, tab.querySelector("#noteInput").value.trim());
+        });
+      }
+
+      function pressKey(k, note) {
+        if (k === "Done" || k === "Add Income") return commitTx(note);
+        if (k === "⌫") data.inputValue = data.inputValue.slice(0, -1);
+        else if (k === "C") data.inputValue = "";
+        else if (k === "+/-") {
+          if (data.inputValue.startsWith("-")) data.inputValue = data.inputValue.slice(1);
+          else data.inputValue = "-" + data.inputValue;
+        } else if (k === "00") data.inputValue += "00";
+        else data.inputValue += k;
+        saveData();
+        const box = document.getElementById("amtBox");
+        if (box) box.textContent = data.inputValue || "0";
+      }
+
+      function commitTx(note) {
+        const raw = data.inputValue || "";
+        let amount = Number(raw);
+        if (!raw || !isFinite(amount) || amount === 0) return alert("Enter amount first.");
+        amount = Math.abs(amount);
+        data.tx.push({
+          id: crypto.randomUUID(),
+          type: data.quickType,
+          amount,
+          category: data.quickCat,
+          note,
+          date: new Date().toISOString()
+        });
+        data.inputValue = "";
+        saveData();
+        renderAll();
+        activeTab = "ledger";
+        switchTab("ledger");
+      }
+
+      window.editBudget = function(key) {
+        const cur = data.budgets[key] || 0;
+        const amt = prompt("Monthly budget for " + key + " (current: $" + cur + "):", String(cur));
+        if (amt === null) return;
+        if (!amt || isNaN(amt) || Number(amt) < 0) return alert("Invalid amount.");
+        if (Number(amt) === 0) { delete data.budgets[key]; }
+        else { data.budgets[key] = Number(amt); }
+        saveData();
+        renderDiscoverTab();
+      };
+
+      function renderDiscoverTab() {
+        const tab = document.getElementById("tab-discover");
+        const mk = monthKey(new Date());
+        const spentMap = {};
+        for (const t of data.tx) {
+          if (t.type !== "expense") continue;
+          if (monthKey(new Date(t.date)) !== mk) continue;
+          spentMap[t.category] = (spentMap[t.category] || 0) + t.amount;
+        }
+
+        let totalBudget = 0, totalSpent = 0;
+        const catsWith = expenseCategoryPool.filter(c => data.budgets[c.key] || spentMap[c.key]);
+        const rows = catsWith.map(c => {
+          const budget = data.budgets[c.key] || 0;
+          const spent = spentMap[c.key] || 0;
+          totalBudget += budget; totalSpent += spent;
+          const pct = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+          const rem = budget - spent;
+          return `<div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <span style="display:flex;align-items:center;gap:6px;font-size:13px;">${iconFor(c.key,16)} ${c.key}</span>
+              <span style="font-size:12px;color:var(--muted);"><b>$${money(spent)}</b> / $${money(budget)}</span>
+            </div>
+            <div class="bar"><i style="width:${Math.max(2,pct)}%;${pct>90?'background:#ef4444;':''}"></i></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:${rem>=0?'var(--ok)':'var(--danger)'};margin-top:2px;">
+              <span>${rem>=0?'Left: $'+money(rem):'Over: $'+money(Math.abs(rem))}</span>
+              <span style="cursor:pointer;color:#6366f1;" onclick="editBudget('${c.key}')">Edit</span>
+            </div>
+          </div>`;
+        }).join("");
+
+        const tpct = totalBudget>0?Math.min(100,Math.round((totalSpent/totalBudget)*100)):0;
+        const trem = totalBudget-totalSpent;
+
+        tab.innerHTML = `
+          <div class="card">
+            <div style="font-weight:800;margin-bottom:8px;">Budget Management</div>
+            <div class="small" style="margin-bottom:8px;">Set monthly budgets per category to track spending.</div>
+            <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line);">
+              <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;">
+                <span>Total</span>
+                <span>$${money(totalSpent)} / $${money(totalBudget)}</span>
+              </div>
+              <div class="bar" style="margin-top:6px;"><i style="width:${Math.max(2,tpct)}%;${tpct>90?'background:#ef4444;':''}"></i></div>
+              <div style="font-size:12px;color:${trem>=0?'var(--ok)':'var(--danger)'};margin-top:2px;">
+                ${trem>=0?'Remaining: $'+money(trem):'Overspent: $'+money(Math.abs(trem))}
+              </div>
+            </div>
+            ${rows || '<div class="small">No budgets set. Tap "+ Add Category Budget" below to start.</div>'}
+            <div style="margin-top:8px;text-align:center;">
+              <button id="addBudgetBtn" class="ghost" style="display:inline-block;width:auto;padding:6px 16px;">+ Add Category Budget</button>
+            </div>
+          </div>
+        `;
+
+        tab.querySelector("#addBudgetBtn").onclick = () => {
+          const avail = expenseCategoryPool.filter(c => !data.budgets[c.key]);
+          if (!avail.length) return alert("All expense categories already have budgets.");
+          // Show category picker inline
+          const picker = document.createElement("div");
+          picker.id = "budgetPicker";
+          picker.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px solid var(--line);";
+          picker.innerHTML = '<div class="small" style="margin-bottom:6px;">Select a category:</div><div class="cat-grid">' +
+            avail.map(c => `<div class="cat" data-key="${c.key}"><span class="ico">${c.icon}</span>${c.key}</div>`).join("") +
+            '</div><button id="cancelBudgetPick" class="ghost" style="margin-top:6px;padding:6px;font-size:12px;">Cancel</button>';
+          document.getElementById("addBudgetBtn").closest("div").replaceWith(picker);
+          picker.querySelectorAll(".cat").forEach(el => {
+            el.onclick = () => {
+              const amt = prompt("Monthly budget for " + el.dataset.key + ":");
+              if (!amt || isNaN(amt) || Number(amt) <= 0) return alert("Invalid amount.");
+              data.budgets[el.dataset.key] = Number(amt);
+              saveData();
+              renderDiscoverTab();
+            };
+          });
+          picker.querySelector("#cancelBudgetPick").onclick = renderDiscoverTab;
+        };
+      }
+
+      function renderBadges() {
+        const streak = calcStreakDays();
+        const milestones = [3,7,21,50,100,200,365,500,800,1000];
+        return milestones.map(m => {
+          const on = streak >= m;
+          return `<div class="badge ${on?'on':''}">
+            <div class="ico">${on ? "🏅" : "🔒"}</div>
+            <div class="day">${m} DAYS</div>
+            <div class="cap">${on ? "Unlocked" : "Locked"}</div>
+          </div>`;
+        }).join("");
+      }
+
+      function calcStreakDays() {
+        const set = new Set(data.tx.map(t => new Date(t.date).toISOString().slice(0,10)));
+        return set.size;
+      }
+
+      function dayKey(date = new Date()) {
+        return date.toISOString().slice(0, 10);
+      }
+
+      function checkinToday() {
+        const k = dayKey();
+        if (!data.checkins.includes(k)) data.checkins.push(k);
+        data.checkins = [...new Set(data.checkins)].sort();
+        saveData();
+      }
+
+      function calcCheckinStreak() {
+        const days = [...new Set(data.checkins)].sort();
+        if (!days.length) return 0;
+        let streak = 0;
+        let cursor = new Date();
+        while (true) {
+          const key = dayKey(cursor);
+          if (!days.includes(key)) break;
+          streak++;
+          cursor.setDate(cursor.getDate() - 1);
+        }
+        return streak;
+      }
+
+      function renderUnlockedBadges(streak, milestones, mode) {
+        const unlocked = milestones.filter(m => streak >= m);
+        if (!unlocked.length) return '<div class="small">No badges unlocked yet.</div>';
+        const top = unlocked[unlocked.length - 1];
+        const label = mode === 'checkin' ? 'Check-in' : 'Bookkeeping';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:6px 0;"><img src="badge_base.png" style="width:40px;height:40px;"><div><div style="font-weight:800;font-size:15px;">${top} DAYS</div><div class="small">Highest ${label} Badge</div></div></div>`;
+      }
+
+      function renderMeTab() {
+        const tab = document.getElementById("tab-me");
+        const checkinMilestones = [1,3,7,21,50,100,200,365];
+        const bookkeepingMilestones = [1,3,7,21,50,100,200,365,500,800,1000];
+        const checkinStreak = calcCheckinStreak();
+        const bookkeepingDays = calcStreakDays();
+        const checkedToday = data.checkins.includes(dayKey());
+        const sub = window.CentsnapSubscription;
+        const isPremium = sub && sub.isPremium();
+        const p = data.profile;
+        const avatarContent = p.avatar
+          ? `<img src="${p.avatar}" style="width:48px;height:48px;border-radius:999px;object-fit:cover;">`
+          : `<span style="font-size:22px;font-weight:700;color:#4b5563;">${(p.username||auth.email[0]||"?").toUpperCase()}</span>`;
+
+        tab.innerHTML = `
+          <div class="card">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+              <div id="profileAvatar" style="width:48px;height:48px;border-radius:999px;background:#d1d5db;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;flex-shrink:0;">${avatarContent}</div>
+              <div style="flex:1;min-width:0;">
+                <div id="profileNameDisplay" style="font-weight:700;font-size:16px;">${esc(p.username || auth.email.split("@")[0])}</div>
+                <div id="profileEmailDisplay" class="small" style="${p.showEmail?'':'display:none;'}">${esc(auth.email||"-")}</div>
+              </div>
+            </div>
+            <input id="avatarInput" type="file" accept="image/*" style="display:none;">
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <button id="changeAvatarBtn" class="ghost" style="flex:1;">Change Photo</button>
+              <button id="editUsernameBtn" class="ghost" style="flex:1;">Change Name</button>
+            </div>
+            <div style="font-size:12px;margin-bottom:8px;">
+              <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;max-width:100%;">
+                <input type="checkbox" id="showEmailCb" ${p.showEmail?'checked':''}> Show email in header
+              </label>
+            </div>
+            <div style="margin-top:4px;">${sub ? sub.showStatusBadge() : ''}</div>
+            ${isPremium ? `
+              <div style="margin-top:8px;display:flex;gap:8px;">
+                <button id="syncCloudBtn" class="ghost" style="flex:1;">⬆️ Sync to Cloud</button>
+                <button id="loadCloudBtn" class="ghost" style="flex:1;">⬇️ Restore from Cloud</button>
+              </div>
+            ` : `<div style="margin-top:8px;">${sub ? sub.showPaywall() : ''}</div>`}
+            <div id="syncStatus" class="small" style="margin-top:4px;">${sub ? 'Last sync: ' + (sub.getSyncStatus() || 'Never') : ''}</div>
+            <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;gap:8px;">
+              <button onclick="window.logout()" class="ghost" style="flex:1;">Logout</button>
+              <button onclick="window.deleteAccount()" class="warn" style="flex:1;">Delete Account</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="badge-title">Daily Check-in</div>
+            <div class="small">Manual daily check-in. Builds your streak badges.</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <div class="small">Current streak: <b>${checkinStreak} days</b></div>
+              <button id="checkinBtn" class="${checkedToday ? 'ghost' : ''}" style="max-width:140px;">${checkedToday ? 'Checked Today' : 'Check In Today'}</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="badge-title">Unlocked Check-in Badges</div>
+            ${renderUnlockedBadges(checkinStreak, checkinMilestones, 'checkin')}
+          </div>
+          <div class="card">
+            <div class="badge-title">Unlocked Bookkeeping Badges</div>
+            <div class="small">Auto-unlock by unique bookkeeping days.</div>
+            ${renderUnlockedBadges(bookkeepingDays, bookkeepingMilestones, 'bookkeeping')}
+          </div>
+          <div class="card">
+            <div style="font-weight:800;">Data</div>
+            <div class="small" style="margin:6px 0 10px;">Export or reset local budget records.</div>
+            <div class="row">
+              <button id="exportBtn" class="ghost">Export CSV</button>
+              <button id="resetBtn" class="warn">Reset All</button>
+            </div>
+          </div>
+        `;
+
+        // Avatar upload
+        tab.querySelector("#changeAvatarBtn").onclick = () => document.getElementById("avatarInput").click();
+        tab.querySelector("#avatarInput").onchange = function(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function(ev) {
+            data.profile.avatar = ev.target.result;
+            saveData();
+            renderMeTab();
+            updateHeaderUser();
+          };
+          reader.readAsDataURL(file);
+        };
+        // Username edit
+        tab.querySelector("#editUsernameBtn").onclick = () => {
+          const name = prompt("Enter your display name:", data.profile.username || "");
+          if (name === null) return;
+          data.profile.username = name.trim();
+          saveData();
+          renderMeTab();
+          updateHeaderUser();
+        };
+        // Email visibility
+        tab.querySelector("#showEmailCb").onchange = function() {
+          data.profile.showEmail = this.checked;
+          saveData();
+          updateHeaderUser();
+          renderMeTab();
+        };
+
+        tab.querySelector("#checkinBtn").onclick = () => {
+          if (checkedToday) return;
+          checkinToday();
+          renderMeTab();
+        };
+        const syncBtn = tab.querySelector("#syncCloudBtn");
+        if (syncBtn) syncBtn.onclick = () => { sub.syncToCloud(); };
+        const loadBtn = tab.querySelector("#loadCloudBtn");
+        if (loadBtn) loadBtn.onclick = async () => {
+          const ok = await sub.syncFromCloud();
+          if (ok) { data = loadData(); renderAll(); alert('Cloud data restored.'); }
+          else alert('No cloud data found or sync failed.');
+        };
+        tab.querySelector("#exportBtn").onclick = exportCSV;
+        tab.querySelector("#resetBtn").onclick = () => {
+          if (!confirm("Reset all local data?")) return;
+          data = structuredClone(defaultData);
+          saveData(); renderAll();
+        };
+      }
+
+      function switchTab(tab) {
+        activeTab = tab;
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.getElementById(`tab-${tab}`).classList.add("active");
+        document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      }
+
+      function exportCSV() {
+        const header = "date,type,category,amount,note\n";
+        const body = data.tx.map(t => [
+          new Date(t.date).toISOString(),
+          csv(t.type), csv(t.category), Number(t.amount||0).toFixed(2), csv(t.note||"")
+        ].join(",")).join("\n");
+        navigator.clipboard.writeText(header + body).then(function() {
+          alert('CSV copied to clipboard. Paste into any text editor.');
+        }).catch(function() {
+          prompt('Copy CSV manually:', header + body);
+        });
+      }
+
+      function bindMainNavAfterLogin() {
+        document.getElementById("bottomNav").addEventListener("click", (e) => {
+          const b = e.target.closest("button[data-tab]");
+          if (!b) return;
+          switchTab(b.dataset.tab);
+        });
+      }
+
+      bindMainNavAfterLogin();
+
+      function money(v) { return Number(v || 0).toFixed(2); }
+      function fmtDateTime(d) {
+        const dd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        const tt = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+        return `${dd} ${tt}`;
+      }
+      function iconFor(cat, size) {
+        const m = [...expenseCategoryPool, ...incomeCategoryPool].find(x => x.key === cat);
+        const s = m ? m.icon : ICON.other;
+        return size ? s.replace('viewBox="0 0 24 24"', 'viewBox="0 0 24 24" style="width:'+size+'px;height:'+size+'px;vertical-align:middle;"') : s;
+      }
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+      }
+      function csv(s) { return `"${String(s).replace(/"/g, '""')}"`; }
+    </script>
+    <script src="subscription.js"></script>
+  </body>
+</html>
