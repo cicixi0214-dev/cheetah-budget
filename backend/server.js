@@ -13,6 +13,9 @@ const CODES = {}; // email -> { code, exp }
 // Preset review account — always accepts this code
 const REVIEW_EMAIL = 'review@centsnap.app';
 const REVIEW_CODE = '888888';
+// Demo account for App Store Review — fixed code so Apple can log in
+const DEMO_EMAIL = 'centsnap.demo@royhug.online';
+const DEMO_CODE = '000000';
 
 const RESEND_KEY = process.env.EMAIL_PASS || '';
 const EMAIL_FROM = process.env.EMAIL_FROM || 'Centsnap <noreply@mail.royhug.online>';
@@ -104,7 +107,13 @@ app.post(`${mp}/auth/request-code`, async (req, res) => {
   }
   const code = String(Math.floor(100000 + Math.random() * 900000));
   CODES[email] = { code, exp: Date.now() + 10 * 60 * 1000 };
+  // Demo account: skip email send, just log
+  if (email === DEMO_EMAIL) {
+    console.log(`\n🔑 Demo account — use code ${DEMO_CODE}\n`);
+    return res.json({ ok: true });
+  }
   sendCode(email, code);
+  res.json({ ok: true });
   res.json({ ok: true });
 });
 
@@ -116,6 +125,15 @@ app.post(`${mp}/auth/verify-code`, (req, res) => {
     const userFile = `${DATA_DIR}/users.json`;
     const users = readJSON(userFile) || {};
     if (!users[email]) users[email] = { email, createdAt: new Date().toISOString(), premium: true };
+    writeJSON(userFile, users);
+    return res.json({ ok: true, token, user: { email } });
+  }
+  // Demo account bypass for App Store Review
+  if (email === DEMO_EMAIL && code === DEMO_CODE) {
+    const token = signJWT({ sub: email, email });
+    const userFile = `${DATA_DIR}/users.json`;
+    const users = readJSON(userFile) || {};
+    if (!users[email]) users[email] = { email, createdAt: new Date().toISOString(), premium: false };
     writeJSON(userFile, users);
     return res.json({ ok: true, token, user: { email } });
   }
