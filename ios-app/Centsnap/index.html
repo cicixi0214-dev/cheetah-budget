@@ -261,6 +261,11 @@
         box-shadow: 0 6px 16px rgba(234, 179, 8, 0.35);
       }
 
+      button, .cat, .key, .nav button, .badge {
+        touch-action: manipulation;
+        cursor: pointer;
+      }
+
       @media (max-width: 420px) {
         .cat-grid { grid-template-columns: repeat(3, 1fr); }
       }
@@ -497,18 +502,26 @@
       }
 
       function bindAuth() {
-        document.getElementById("requestCodeBtn").onclick = async () => {
-          const email = document.getElementById("email").value.trim().toLowerCase();
+        var reqBtn = document.getElementById("requestCodeBtn");
+        var sendingCode = false;
+        function handleRequestCode(e) {
+          if (e && e.type === 'touchend') e.preventDefault();
+          if (sendingCode) return;
+          var email = document.getElementById("email").value.trim().toLowerCase();
           if (!email) return alert("Please enter email.");
+          sendingCode = true;
           setStatus("Sending verification code...", "");
-          try {
-            const r = await api.requestCode(email);
-            if (!r.ok) return setStatus(`Code request failed: ${r.error || "unknown"}`, "err");
-            setStatus(`Code sent to ${email}`, "ok");
-          } catch (e) {
+          api.requestCode(email).then(function(r) {
+            sendingCode = false;
+            if (!r.ok) return setStatus("Code request failed: " + (r.error || "unknown"), "err");
+            setStatus("Code sent to " + email, "ok");
+          }).catch(function() {
+            sendingCode = false;
             setStatus("Network error. Check your connection and try again.", "err");
-          }
-        };
+          });
+        }
+        reqBtn.addEventListener("click", handleRequestCode);
+        reqBtn.addEventListener("touchend", handleRequestCode, { passive: false });
 
         document.getElementById("loginBtn").onclick = async () => {
           const email = document.getElementById("email").value.trim().toLowerCase();

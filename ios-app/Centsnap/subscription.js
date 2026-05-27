@@ -7,8 +7,8 @@ window.CentsnapSubscription = (function () {
 
   // Mock prices for web-dev mode (real prices come from native)
   var MOCK_PRODUCTS = [
-    { id: 'com.royhug.centsnap.premium.monthly', displayPrice: '$4.99', period: 'month', title: 'Premium Monthly' },
-    { id: 'com.royhug.centsnap.premium.yearly',  displayPrice: '$39.99', period: 'year',  title: 'Premium Yearly' }
+    { id: 'com.royhug.centsnap.sub.monthly', displayPrice: '$4.99', period: 'month', title: 'Premium Monthly' },
+    { id: 'com.royhug.centsnap.sub.yearly',  displayPrice: '$39.99', period: 'year',  title: 'Premium Yearly' }
   ];
 
   var state = {
@@ -129,13 +129,18 @@ window.CentsnapSubscription = (function () {
     if (isPremium()) return;
     var html = [
       '<div class="card" style="border:2px solid #facc15;background:#fffbe6;">',
-      '<h3 style="margin:0 0 8px;">🌟 Upgrade to Premium</h3>',
-      '<p class="small" style="margin-bottom:10px;">Cloud Sync + Advanced Charts + Multi-device. Start your free trial today!</p>',
-      '<div class="row" style="margin-bottom:8px;">',
-      '<button onclick="window.CentsnapSubscription.subscribe(\'com.royhug.centsnap.premium.monthly\')" style="background:#1f2937;color:#fff;padding:10px;border:0;border-radius:10px;font-weight:700;cursor:pointer;">' + getDisplayPrice('com.royhug.centsnap.premium.monthly') + '<span style="font-size:11px;font-weight:400;">/month</span></button>',
-      '<button onclick="window.CentsnapSubscription.subscribe(\'com.royhug.centsnap.premium.yearly\')" style="background:#facc15;color:#111827;padding:10px;border:0;border-radius:10px;font-weight:700;cursor:pointer;">' + getDisplayPrice('com.royhug.centsnap.premium.yearly') + '<span style="font-size:11px;font-weight:400;">/year</span></button>',
+      '<h3 style="margin:0 0 6px;">🌟 Upgrade to Premium</h3>',
+      '<p class="small" style="margin-bottom:10px;">Cloud Sync + Advanced Charts + Multi-device. Subscription auto-renews unless cancelled.</p>',
+      '<div class="row" style="margin-bottom:6px;">',
+      '<button onclick="window.CentsnapSubscription.subscribe(\'com.royhug.centsnap.sub.monthly\')" style="background:#1f2937;color:#fff;padding:10px;border:0;border-radius:10px;font-weight:700;cursor:pointer;">' + getDisplayPrice('com.royhug.centsnap.sub.monthly') + '<span style="font-size:11px;font-weight:400;">/month</span><br><span style="font-size:9px;font-weight:400;">Premium Monthly</span></button>',
+      '<button onclick="window.CentsnapSubscription.subscribe(\'com.royhug.centsnap.sub.yearly\')" style="background:#facc15;color:#111827;padding:10px;border:0;border-radius:10px;font-weight:700;cursor:pointer;">' + getDisplayPrice('com.royhug.centsnap.sub.yearly') + '<span style="font-size:11px;font-weight:400;">/year</span><br><span style="font-size:9px;font-weight:400;">Premium Yearly</span></button>',
       '</div>',
-      '<div style="margin-top:8px;text-align:center;"><button onclick="window.CentsnapSubscription.restore()" style="background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;text-decoration:underline;">Restore Purchases</button></div>',
+      '<div style="text-align:center;font-size:10px;color:#6b7280;line-height:1.6;">',
+      '<button onclick="window.CentsnapSubscription.restore()" style="background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;text-decoration:underline;padding:4px;">Restore Purchases</button><br>',
+      '<a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" style="color:#6b7280;">Terms of Service (EULA)</a>',
+      ' · ',
+      '<a href="https://royhug.online/privacy" target="_blank" style="color:#6b7280;">Privacy Policy</a>',
+      '</div>',
       '</div>'
     ].join('\n');
     return html;

@@ -14,9 +14,9 @@ class StoreKitManager: NSObject, ObservableObject {
     weak var webView: WKWebView?
 
     // MARK: — Product IDs (set these in App Store Connect)
-    let monthlyID  = "com.royhug.centsnap.premium.monthly"
-    let yearlyID   = "com.royhug.centsnap.premium.yearly"
-    let lifetimeID = "com.royhug.centsnap.premium.lifetime"
+    let monthlyID  = "com.royhug.centsnap.sub.monthly"
+    let yearlyID   = "com.royhug.centsnap.sub.yearly"
+    let lifetimeID = "com.royhug.centsnap.lifetime.premium"
 
     // MARK: — Setup
 
@@ -26,7 +26,7 @@ class StoreKitManager: NSObject, ObservableObject {
     }
 
     func loadProducts() async {
-        let ids: Set<String> = [monthlyID, yearlyID]
+        let ids: Set<String> = [monthlyID, yearlyID, lifetimeID]
         guard let p = try? await Product.products(for: ids) else { return }
         products = p
     }
@@ -142,7 +142,7 @@ extension StoreKitManager: WKScriptMessageHandler {
             case "getPrices":
                 if let data = try? JSONSerialization.data(withJSONObject: priceStrings()),
                    let str = String(data: data, encoding: .utf8) {
-                    try? await webView?.evaluateJavaScript("window.__centsnapPrices = \(str); window.dispatchEvent(new Event('centsnap-prices'))")
+                    _ = try? await webView?.evaluateJavaScript("window.__centsnapPrices = \(str); window.dispatchEvent(new Event('centsnap-prices'))")
                 }
             default:
                 break
