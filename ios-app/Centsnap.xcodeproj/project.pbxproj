@@ -351,7 +351,7 @@
 				<key>CODE_SIGN_STYLE</key>
 				<string>Automatic</string>
 				<key>CURRENT_PROJECT_VERSION</key>
-				<string>4</string>
+				<string>5</string>
 				<key>DEVELOPMENT_TEAM</key>
 				<string>G4XC949U33</string>
 				<key>GENERATE_INFOPLIST_FILE</key>
@@ -395,7 +395,7 @@
 				<key>CODE_SIGN_STYLE</key>
 				<string>Automatic</string>
 				<key>CURRENT_PROJECT_VERSION</key>
-				<string>4</string>
+				<string>5</string>
 				<key>DEVELOPMENT_TEAM</key>
 				<string>G4XC949U33</string>
 				<key>GENERATE_INFOPLIST_FILE</key>
