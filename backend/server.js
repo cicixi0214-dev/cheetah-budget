@@ -133,9 +133,9 @@ app.post(`${mp}/auth/verify-code`, (req, res) => {
     const token = signJWT({ sub: email, email });
     const userFile = `${DATA_DIR}/users.json`;
     const users = readJSON(userFile) || {};
-    if (!users[email]) users[email] = { email, createdAt: new Date().toISOString(), premium: true };
+    users[email] = { ...(users[email] || {}), email, premium: true };
     writeJSON(userFile, users);
-    return res.json({ ok: true, token, user: { email } });
+    return res.json({ ok: true, token, user: { email, premium: true } });
   }
   const record = CODES[email];
   if (!record || record.code !== code || Date.now() > record.exp) {
